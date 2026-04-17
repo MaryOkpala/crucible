@@ -89,7 +89,7 @@ pipeline {
             steps {
                 sh """
                     docker run --rm \
-                        -v /home/ubuntu/crucible:/workspace \
+                        -v \${WORKSPACE}:/workspace \
                         aquasec/trivy:latest fs \
                         --exit-code 0 \
                         --severity HIGH,CRITICAL \
