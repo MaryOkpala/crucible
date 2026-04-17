@@ -1,0 +1,165 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME        = 'crucible-app'
+        APP_VERSION     = "1.0.${BUILD_NUMBER}"
+        SONAR_PROJECT   = 'crucible'
+        NEXUS_URL       = 'http://nexus:8081'
+        NEXUS_REPO      = 'crucible-releases'
+        DOCKER_IMAGE    = "crucible-app:${BUILD_NUMBER}"
+        TOMCAT_URL      = 'http://tomcat:8080'
+    }
+
+    tools {
+        jdk   'JDK-17'
+        maven 'Maven-3.9.6'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo "Checking out Project Crucible — build ${BUILD_NUMBER}"
+                checkout scm
+            }
+        }
+
+        stage('Maven Build') {
+            steps {
+                dir('app') {
+                    sh 'mvn clean package -DBUILD_NUMBER=${BUILD_NUMBER} -DskipTests=false'
+                }
+            }
+            post {
+                success {
+                    echo "Build successful — artifact: crucible-app.war"
+                    archiveArtifacts artifacts: 'app/target/*.war', fingerprint: true
+                }
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                dir('app') {
+                    sh 'mvn test -DBUILD_NUMBER=${BUILD_NUMBER}'
+                }
+            }
+            post {
+                always {
+                    junit 'app/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('Code Coverage') {
+            steps {
+                dir('app') {
+                    sh 'mvn jacoco:report'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir('app') {
+                        sh """
+                            mvn sonar:sonar \
+                                -Dsonar.projectKey=${SONAR_PROJECT} \
+                                -Dsonar.projectName='Project Crucible' \
+                                -Dsonar.java.coveragePlugin=jacoco \
+                                -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                                -DBUILD_NUMBER=${BUILD_NUMBER}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Trivy Filesystem Scan') {
+            steps {
+                sh """
+                    docker run --rm \
+                        -v /home/ubuntu/crucible:/workspace \
+                        aquasec/trivy:latest fs \
+                        --exit-code 0 \
+                        --severity HIGH,CRITICAL \
+ 
+                       --format table \
+                        /workspace/app
+                """
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh "docker build -t ${DOCKER_IMAGE} -f docker/Dockerfile ."
+            }
+        }
+
+        stage('Trivy Image Scan') {
+            steps {
+                sh """
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy:latest image \
+                        --exit-code 0 \
+                        --severity HIGH,CRITICAL \
+                        --format table \
+                        ${DOCKER_IMAGE}
+                """
+            }
+        }
+
+        stage('Publish to Nexus') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'nexus-credentials',
+                    usernameVariable: 'NEXUS_USER',
+                    passwordVariable: 'NEXUS_PASS'
+                )]) {
+                    dir('app') {
+                        sh """
+                            mvn deploy \
+                                -DskipTests \
+                                -DaltDeploymentRepository=crucible-releases::default::${NEXUS_URL}/repository/${NEXUS_REPO}/ \
+                                -DBUILD_NUMBER=${BUILD_NUMBER} \
+                                -Dusername=${NEXUS_USER} \
+                                -Dpassword=${NEXUS_PASS}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Tomcat') {
+            steps {
+                sh """
+                    docker cp app/target/crucible-app.war tomcat:/usr/local/tomcat/webapps/crucible-app.war
+                """
+                echo "Deployed crucible-app.war to Tomcat — available at http://34.197.110.148:8082/crucible-app"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline completed successfully — Crucible v${APP_VERSION} is live"
+        }
+        failure {
+            echo "Pipeline failed at stage: ${currentBuild.result} — check logs above"
+        }
+        always {
+            cleanWs()
+        }
+    }
+}
