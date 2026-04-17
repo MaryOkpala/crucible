@@ -87,16 +87,7 @@ pipeline {
 
         stage('Trivy Filesystem Scan') {
             steps {
-                sh """
-                    docker run --rm \
-                        -v \${WORKSPACE}:/workspace \
-                        aquasec/trivy:latest fs \
-                        --exit-code 0 \
-                        --severity HIGH,CRITICAL \
- 
-                       --format table \
-                        /workspace/app
-                """
+                sh 'trivy fs --exit-code 0 --severity HIGH,CRITICAL --format table ${WORKSPACE}/app'
             }
         }
 
@@ -108,15 +99,7 @@ pipeline {
 
         stage('Trivy Image Scan') {
             steps {
-                sh """
-                    docker run --rm \
-                        -v /var/run/docker.sock:/var/run/docker.sock \
-                        aquasec/trivy:latest image \
-                        --exit-code 0 \
-                        --severity HIGH,CRITICAL \
-                        --format table \
-                        ${DOCKER_IMAGE}
-                """
+                sh "trivy image --exit-code 0 --severity HIGH,CRITICAL --format table ${DOCKER_IMAGE}"
             }
         }
 
@@ -143,10 +126,8 @@ pipeline {
 
         stage('Deploy to Tomcat') {
             steps {
-                sh """
-                    docker cp app/target/crucible-app.war tomcat:/usr/local/tomcat/webapps/crucible-app.war
-                """
-                echo "Deployed crucible-app.war to Tomcat — available at http://34.197.110.148:8082/crucible-app"
+                sh 'docker cp app/target/crucible-app.war tomcat:/usr/local/tomcat/webapps/crucible-app.war'
+                echo 'Deployed crucible-app.war to Tomcat — available at http://34.197.110.148:8082/crucible-app'
             }
         }
     }
@@ -156,7 +137,7 @@ pipeline {
             echo "Pipeline completed successfully — Crucible v${APP_VERSION} is live"
         }
         failure {
-            echo "Pipeline failed at stage: ${currentBuild.result} — check logs above"
+            echo "Pipeline failed — check logs above"
         }
         always {
             cleanWs()
