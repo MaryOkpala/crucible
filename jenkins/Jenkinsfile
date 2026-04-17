@@ -102,24 +102,16 @@ pipeline {
                 sh "trivy image --exit-code 0 --severity HIGH,CRITICAL --format table ${DOCKER_IMAGE}"
             }
         }
-
+        
         stage('Publish to Nexus') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'nexus-credentials',
-                    usernameVariable: 'NEXUS_USER',
-                    passwordVariable: 'NEXUS_PASS'
-                )]) {
-                    dir('app') {
-                        sh """
-                            mvn deploy \
-                                -DskipTests \
-                                -DaltDeploymentRepository=crucible-releases::default::${NEXUS_URL}/repository/${NEXUS_REPO}/ \
-                                -DBUILD_NUMBER=${BUILD_NUMBER} \
-                                -Dusername=${NEXUS_USER} \
-                                -Dpassword=${NEXUS_PASS}
-                        """
-                    }
+                dir('app') {
+                    sh """
+                        mvn deploy \
+                            -DskipTests \
+                            -DBUILD_NUMBER=${BUILD_NUMBER} \
+                            -s /root/.m2/settings.xml
+                    """
                 }
             }
         }

@@ -84,4 +84,12 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>crucible-releases</id>
+            <url>http://nexus:8081/repository/crucible-releases/</url>
+        </repository>
+    </distributionManagement>
+
 </project>
