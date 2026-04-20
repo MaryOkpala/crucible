@@ -4,6 +4,9 @@
 
 ## Live endpoints
 
+> The demo environment runs on AWS EC2 and may be offline to manage costs.
+> To request a live demo, connect with me on LinkedIn.
+
 | Service | URL |
 |---------|-----|
 | Application | http://34.197.110.148:8082/crucible-app |
