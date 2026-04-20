@@ -44,3 +44,4 @@ java -jar target/crucible-app.war
 
 The full pipeline is defined in `jenkins/Jenkinsfile`.
 # Crucible — CI/CD Pipeline
+# Crucible — CI/CD Pipeline
