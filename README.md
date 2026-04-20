@@ -2,6 +2,17 @@
 
 > An enterprise-grade CI/CD pipeline that takes a Java web application from code commit to production deployment — automatically, reliably, and with full quality enforcement.
 
+## Live endpoints
+
+| Service | URL |
+|---------|-----|
+| Application | http://34.197.110.148:8082/crucible-app |
+| Jenkins | http://34.197.110.148:8080 |
+| SonarQube | http://34.197.110.148:9000 |
+| Nexus | http://34.197.110.148:8081 |
+| Grafana | http://34.197.110.148:3000 |
+| Prometheus | http://34.197.110.148:9090 |
+
 ## What this project does
 
 Every push to `main` triggers a fully automated pipeline that:
