@@ -1,0 +1,6 @@
+# Trivy ignore file for Project Crucible
+# Add CVE IDs here to suppress known false positives
+# Format: CVE-YYYY-XXXXX
+
+# Example — uncomment to ignore a specific CVE:
+# CVE-2023-12345
