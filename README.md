@@ -2,17 +2,9 @@
 
 > An enterprise-grade CI/CD pipeline that takes a Java application from code commit to live deployment — automatically, reliably, and with security checks at every stage.
 
----
-
-## The problem I set out to solve
-
-Most developers have experienced the frustration of a deployment that works on one machine but breaks on another. Or a security vulnerability that slipped into production because nobody ran a scan. Or a build that passed tests but never actually got deployed because someone forgot to run the script.
-
-I built Crucible to solve all of that at once. Not by adding more manual steps — but by removing every manual step entirely.
-
 When I push code to this repository, a pipeline fires automatically. It compiles the code, runs unit tests, checks code coverage, analyses the codebase for quality issues, enforces a quality gate that aborts the entire pipeline if standards are not met, scans for security vulnerabilities at two separate points, packages the artifact with a version number, builds a Docker image, scans that image too, publishes the artifact to a repository, and deploys the application to a running server. The whole thing takes just over a minute.
 
-If anything fails — if a test breaks, if the quality gate is not met, if a CVE is found — the pipeline stops. Nothing broken reaches production.
+If anything fails, if a test breaks, if the quality gate is not met, if a CVE is found, the pipeline stops. Nothing broken reaches production.
 
 ---
 
@@ -54,7 +46,7 @@ Before any artifact is published or any image is built, the code must pass Sonar
 
 Version 1.0.17. 126 lines of code. Zero new issues. Zero accepted issues. Quality Gate: **Passed**.
 
-The pipeline only reached the deployment stage because this gate passed first. That is the whole point — quality is enforced by the system, not by hope.
+The pipeline only reached the deployment stage because this gate passed first. That is the whole point — quality is enforced by the system.
 
 ---
 
@@ -66,7 +58,7 @@ Most CI/CD tutorials stop at deployment. Crucible goes further. The infrastructu
 
 What this dashboard shows is real. The CPU usage spike at 18:10 is the pipeline running. The container memory usage bars are the Docker services on the server. The Jenkins build times panel shows how long each stage took in each build.
 
-This is what production observability looks like. You do not just know that the deployment worked — you can see exactly what happened, when it happened, and what resources it consumed.
+This is what production observability looks like. You do not just know that the deployment worked, you can see exactly what happened, when it happened, and what resources it consumed.
 
 ---
 
@@ -156,14 +148,6 @@ docker compose up -d
 ### Trigger a build
 
 Push any commit to main. The pipeline fires automatically within seconds.
-
----
-
-## What this project demonstrates
-
-This is not a tutorial project. Every component here runs on real AWS infrastructure. The pipeline has executed 17 times. The quality gate has caught real issues. The Trivy scans have run against real images.
-
-The pattern — automated build, quality enforcement, security scanning, versioned artifacts, container deployment, live observability — is the same pattern used by engineering teams at companies shipping software at scale.
 
 ---
 
