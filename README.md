@@ -2,7 +2,7 @@
 
 > An enterprise-grade CI/CD pipeline that takes a Java application from code commit to live deployment — automatically, reliably, and with security checks at every stage.
 
-When I push code to this repository, a pipeline fires automatically. It compiles the code, runs unit tests, checks code coverage, analyses the codebase for quality issues, enforces a quality gate that aborts the entire pipeline if standards are not met, scans for security vulnerabilities at two separate points, packages the artifact with a version number, builds a Docker image, scans that image too, publishes the artifact to a repository, and deploys the application to a running server. The whole thing takes just over a minute.
+When a code is pushed to this repository, a pipeline fires automatically. It compiles the code, runs unit tests, checks code coverage, analyses the codebase for quality issues, enforces a quality gate that aborts the entire pipeline if standards are not met, scans for security vulnerabilities at two separate points, packages the artifact with a version number, builds a Docker image, scans that image too, publishes the artifact to a repository, and deploys the application to a running server. The whole thing takes just over a minute.
 
 If anything fails, if a test breaks, if the quality gate is not met, if a CVE is found, the pipeline stops. Nothing broken reaches production.
 
